@@ -2,8 +2,8 @@ import Order from '../models/Order.js';
 import User from '../models/User.js';
 import Product from '../models/Product.js';
 import stripe from 'stripe';
-// place order COD : /api/order/cod
 
+// place order stripe : /api/order/stripe
 export const placeOrderStripe = async (req, res) => {
   try {
     const {
@@ -61,7 +61,7 @@ export const placeOrderStripe = async (req, res) => {
       };
     });
 
-    const sesssion = await stripeInstance.checkout.sessions.create({
+    const session = await stripeInstance.checkout.sessions.create({
       line_items,
       mode: 'payment',
       success_url: `${origin}/loader?next=my-orders`,
@@ -74,7 +74,7 @@ export const placeOrderStripe = async (req, res) => {
 
     return res.json({
       success: true,
-      url: sesssion.url,
+      url: session.url,
     });
   } catch (error) {
     return res.json({ success: false, message: error.message });
@@ -82,22 +82,21 @@ export const placeOrderStripe = async (req, res) => {
 };
 
 // stripe webhooks
-
-export const stripeWebhook = async (req, res) => {
+export const stripeWebhooks = async (request, response) => {
   const stripeInstance = new stripe(process.env.STRIPE_SECRET_KEY);
 
-  const sig = req.headers['stripe-signature'];
+  const sig = request.headers['stripe-signature'];
 
   let event;
 
   try {
     event = stripeInstance.webhooks.constructEvent(
-      req.body,
+      request.body,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
     );
   } catch (error) {
-    res.status(400).send(`Webhook Error: ${error.message}`);
+    response.status(400).send(`Webhook Error: ${error.message}`);
   }
 
   // handle event
@@ -113,13 +112,14 @@ export const stripeWebhook = async (req, res) => {
 
       const { orderId, userId } = session.data[0].metadata;
 
-      // payemt is paid
+      // payment is paid
 
-      await Order.findById(orderId, { isPaid: true });
+      await Order.findByIdAndUpdate(orderId, { isPaid: true });
 
-      await User.findById(userId, { cartItems: {} });
+      await User.findByIdAndUpdate(userId, { cartItems: {} });
       break;
     }
+
     case 'payment_intent.failed': {
       const paymentIntent = event.data.object;
       const paymentIntentId = paymentIntent.id;
@@ -139,11 +139,12 @@ export const stripeWebhook = async (req, res) => {
       break;
   }
 
-  res.json({
+  response.json({
     received: true,
   });
 };
 
+// place order COD : /api/order/cod
 export const placeOrderCOD = async (req, res) => {
   try {
     const {
