@@ -166,7 +166,12 @@ const Cart = () => {
                         <p className="text-gray-500">{selectedAddress ? `${selectedAddress.street},
                         ${selectedAddress.city}
                          ${selectedAddress.state}, ${selectedAddress.country}` : 'No address found'}</p>
-                        <button onClick={() => setShowAddress(!showAddress)} className="text-primary hover:underline cursor-pointer">
+                        <button onClick={() => {
+                            if (!user) {
+                                toast.error('Please login to continue')
+                            }
+                            setShowAddress(!showAddress)
+                        }} className="text-primary hover:underline cursor-pointer">
                             Change
                         </button>
                         {showAddress && (
@@ -177,7 +182,9 @@ const Cart = () => {
                                 }} className="text-gray-500 p-2 hover:bg-gray-100">
                                     {address.street},{address.city}, {address.state}, {address.country}
                                 </p>))}
-                                <p onClick={() => navigate('/add-address')} className="text-indigo-500 text-center cursor-pointer p-2 hover:bg-indigo-500/10">
+                                <p onClick={() => {
+                                    user ? navigate('/add-address') : toast.error('Please Login to continue')
+                                }} className="text-indigo-500 text-center cursor-pointer p-2 hover:bg-indigo-500/10">
                                     Add address
                                 </p>
                             </div>
