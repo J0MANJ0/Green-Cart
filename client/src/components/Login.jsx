@@ -19,7 +19,10 @@ const Login = () => {
                 navigate('/')
                 setUser(data.user)
                 setShowUserLogin(false)
-                toast.success(`Welcome back ${name}`)
+                toast.success(`Welcome back ${data.user.name}!`, {
+                    duration: 3000,
+                    position: 'top-center',
+                });
             } else {
                 toast.error(data.message)
             }
