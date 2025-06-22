@@ -19,6 +19,7 @@ const Login = () => {
                 navigate('/')
                 setUser(data.user)
                 setShowUserLogin(false)
+                toast.success(`Welcome back ${name}`)
             } else {
                 toast.error(data.message)
             }
