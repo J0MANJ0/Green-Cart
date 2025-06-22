@@ -14,7 +14,6 @@ import { stripeWebhooks } from './controllers/orderController.js';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
-connectDB();
 connectCloudinary();
 
 app.use(cookieParser());
@@ -44,6 +43,10 @@ app.use('/api/cart', cartRouter);
 app.use('/api/address', addressRouter);
 app.use('/api/order', orderRouter);
 
-app.listen(PORT, () =>
-  console.log(`Server running on http://localhost:${PORT}`)
-);
+connectDB()
+  .then(() => {
+    app.listen(PORT, () =>
+      console.log(`Server running on http://localhost:${PORT}`)
+    );
+  })
+  .catch((err) => console.log(err));
