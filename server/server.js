@@ -17,13 +17,22 @@ const PORT = process.env.PORT || 4000;
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({ origin: ['http://localhost:5173'], credentials: true }));
-
-app.post('/stripe', express.raw({ type: 'application/json' }), stripeWebhooks);
+app.use(
+  cors({
+    origin: ['http://localhost:5173', 'https://green-cart-self.vercel.app'],
+    credentials: true,
+  })
+);
 
 app.get('/', (req, res) => {
   res.send('Welcome');
 });
+
+app.post(
+  '/stripe/webhook',
+  express.raw({ type: 'application/json' }),
+  stripeWebhooks
+);
 
 app.use('/api/user', userRouter);
 app.use('/api/seller', adminRouter);

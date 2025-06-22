@@ -45,7 +45,7 @@ export const register = async (req, res) => {
       user: { email: user.email, name: user.name },
     });
   } catch (error) {
-    console.log(error.message);
+    console.log('register', error.message);
     res.json({
       success: false,
       message: error.message,
@@ -101,7 +101,7 @@ export const login = async (req, res) => {
       user: { email: user.email, name: user.name },
     });
   } catch (error) {
-    console.log(error.message);
+    console.log('Login', error.message);
     res.json({
       success: false,
       message: error.message,
@@ -123,7 +123,7 @@ export const isAuth = async (req, res) => {
       user,
     });
   } catch (error) {
-    console.log(error.message);
+    console.log('is-auth-contrller', error.message);
     res.json({
       success: false,
       message: error.message,
@@ -146,7 +146,7 @@ export const logout = async (req, res) => {
       message: 'Logged Out',
     });
   } catch (error) {
-    console.log(error.message);
+    console.log('logout_user', error.message);
     res.json({
       success: false,
       message: error.message,

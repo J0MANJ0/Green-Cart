@@ -63,12 +63,13 @@ export const placeOrderStripe = async (req, res) => {
 
     const session = await stripeInstance.checkout.sessions.create({
       line_items,
+      locale: 'en',
       mode: 'payment',
       success_url: `${origin}/loader?next=my-orders`,
       cancel_url: `${origin}/cart`,
       metadata: {
+        userId: userId.toString(),
         orderId: order._id.toString(),
-        userId,
       },
     });
 
@@ -114,9 +115,26 @@ export const stripeWebhooks = async (request, response) => {
 
       // payment is paid
 
-      await Order.findByIdAndUpdate(orderId, { isPaid: true });
+      const updateOrder = await Order.findByIdAndUpdate(
+        orderId,
+        { isPaid: true },
+        { new: true }
+      );
+      if (!updateOrder) {
+        console.log(`OrderId: ${orderId}`);
+        console.log(`UpdatedOrder: ${updateOrder}`);
+      }
 
-      await User.findByIdAndUpdate(userId, { cartItems: {} });
+      const updateUser = await User.findByIdAndUpdate(
+        userId,
+        { $set: { cartItems: {} } },
+        { new: true }
+      );
+      if (!updateUser) {
+        console.log(`UserId: ${userId}`);
+        console.log(`UpdatedUser: ${updateUser}`);
+      }
+
       break;
     }
 

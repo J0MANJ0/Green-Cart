@@ -24,7 +24,7 @@ export const addProduct = async (req, res) => {
       message: 'Product Added',
     });
   } catch (error) {
-    console.log(error.message);
+    console.log('addproduct_controller', error.message);
     res.json({
       success: false,
       message: error.message,
@@ -41,7 +41,7 @@ export const productList = async (_, res) => {
       products,
     });
   } catch (error) {
-    console.log(error.message);
+    console.log('productlist_controller', error.message);
     res.json({
       success: false,
       message: error.message,
@@ -61,7 +61,7 @@ export const product = async (req, res) => {
       product,
     });
   } catch (error) {
-    console.log(error.message);
+    console.log('product_controller', error.message);
     res.json({
       success: false,
       message: error.message,
@@ -83,7 +83,7 @@ export const changeStock = async (req, res) => {
       message: 'Stock Updated',
     });
   } catch (error) {
-    console.log(error.message);
+    console.log('changestock_controller', error.message);
     res.json({
       success: false,
       message: error.message,

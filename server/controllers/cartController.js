@@ -14,7 +14,7 @@ export const updateCart = async (req, res) => {
       message: 'Cart Updated',
     });
   } catch (error) {
-    console.log(error.message);
+    console.log('updatecart_controller', error.message);
     res.json({
       success: false,
       message: error.message,

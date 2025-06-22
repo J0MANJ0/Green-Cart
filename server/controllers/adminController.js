@@ -33,7 +33,7 @@ export const adminLogin = async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(error.message);
+    console.log('adminlogin_controller', error.message);
     res.json({
       success: false,
       message: error.message,
@@ -42,14 +42,13 @@ export const adminLogin = async (req, res) => {
 };
 
 // Admin auth : /api/seller/is-auth
-export const isSellerAuth = async (req, res) => {
+export const isSellerAuth = async (_, res) => {
   try {
     return res.json({
       success: true,
-      user,
     });
   } catch (error) {
-    console.log(error.message);
+    console.log('is-seller controller', error.message);
     res.json({
       success: false,
       message: error.message,
@@ -72,7 +71,7 @@ export const adminLogout = async (req, res) => {
       message: 'Logged Out',
     });
   } catch (error) {
-    console.log(error.message);
+    console.log('adminlogout', error.message);
     res.json({
       success: false,
       message: error.message,

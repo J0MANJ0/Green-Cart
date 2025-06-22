@@ -14,7 +14,7 @@ export const addAddress = async (req, res) => {
       message: 'Address added successfully',
     });
   } catch (error) {
-    console.log(error.message);
+    console.log('address_controller', error.message);
     res.json({
       success: false,
       message: error.message,
@@ -35,7 +35,7 @@ export const getAddress = async (req, res) => {
       addresses,
     });
   } catch (error) {
-    console.log(error.message);
+    console.log('getaddress_controller', error.message);
     res.json({
       success: false,
       message: error.message,
