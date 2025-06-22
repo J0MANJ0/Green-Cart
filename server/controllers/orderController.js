@@ -2,15 +2,13 @@ import Order from '../models/Order.js';
 import User from '../models/User.js';
 import Product from '../models/Product.js';
 import stripe from 'stripe';
+import mongoose from 'mongoose';
 
 // place order stripe : /api/order/stripe
 export const placeOrderStripe = async (req, res) => {
   try {
     const {
       body: { userId, items, address },
-    } = req;
-
-    const {
       headers: { origin },
     } = req;
 
@@ -21,10 +19,21 @@ export const placeOrderStripe = async (req, res) => {
       });
     }
 
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      console.error(`Invalid userId: ${userId}`);
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid userId',
+      });
+    }
+
     let productData = [];
 
     let amount = await items.reduce(async (acc, item) => {
       const product = await Product.findById(item.product);
+      if (!product) {
+        throw new Error(`Product not found: ${item.product}`);
+      }
       productData.push({
         name: product.name,
         price: product.offerPrice,
@@ -48,18 +57,29 @@ export const placeOrderStripe = async (req, res) => {
 
     const stripeInstance = new stripe(process.env.STRIPE_SECRET_KEY);
 
-    const line_items = productData.map((item) => {
-      return {
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: item.name,
-          },
-          unit_amount: Math.floor(item.price + item.price * 0.02) * 100,
+    // const line_items = productData.map((item) => (
+    //   {
+    //     price_data: {
+    //       currency: 'usd',
+    //       product_data: {
+    //         name: item.name,
+    //       },
+    //       unit_amount: Math.floor(item.price + item.price * 0.02) * 100,
+    //     },
+    //     quantity: item.quantity,
+    //   };
+    // ));
+
+    const line_items = productData.map((item) => ({
+      price_data: {
+        currency: 'usd',
+        product_data: {
+          name: item.name,
         },
-        quantity: item.quantity,
-      };
-    });
+        unit_amount: Math.floor(item.price + item.price * 0.02) * 100,
+      },
+      quantity: item.quantity,
+    }));
 
     const session = await stripeInstance.checkout.sessions.create({
       line_items,
@@ -111,6 +131,15 @@ export const stripeWebhooks = async (request, response) => {
         payment_intent: paymentIntentId,
       });
 
+      if (!session.data[0]) {
+        console.error(
+          `No session found for payment intent: ${paymentIntentId}`
+        );
+        return response
+          .status(400)
+          .json({ received: false, message: 'No session found' });
+      }
+
       const { orderId, userId } = session.data[0].metadata;
 
       // payment is paid
@@ -121,8 +150,9 @@ export const stripeWebhooks = async (request, response) => {
         { new: true }
       );
       if (!updateOrder) {
-        console.log(`OrderId: ${orderId}`);
-        console.log(`UpdatedOrder: ${updateOrder}`);
+        console.error(`Failed to update order: ${orderId}`);
+      } else {
+        console.log(`Order updated: ${orderId}`);
       }
 
       const updateUser = await User.findByIdAndUpdate(
@@ -131,8 +161,9 @@ export const stripeWebhooks = async (request, response) => {
         { new: true }
       );
       if (!updateUser) {
-        console.log(`UserId: ${userId}`);
-        console.log(`UpdatedUser: ${updateUser}`);
+        console.error(`Failed to clear cart for user: ${userId}`);
+      } else {
+        console.log(`Cart cleared for user: ${userId}`);
       }
 
       break;
@@ -149,6 +180,7 @@ export const stripeWebhooks = async (request, response) => {
       const { orderId } = session.data[0].metadata;
 
       await Order.findByIdAndDelete(orderId);
+      console.log(`Deleted failed order: ${orderId}`);
       break;
     }
 

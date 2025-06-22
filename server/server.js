@@ -14,8 +14,9 @@ import { stripeWebhooks } from './controllers/orderController.js';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
+connectDB();
+connectCloudinary();
 
-app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
@@ -24,15 +25,17 @@ app.use(
   })
 );
 
-app.get('/', (req, res) => {
-  res.send('Welcome');
-});
-
 app.post(
-  '/stripe/webhook',
+  '/api/stripe-webhooks',
   express.raw({ type: 'application/json' }),
   stripeWebhooks
 );
+
+app.use(express.json());
+
+app.get('/', (req, res) => {
+  res.send('Welcome');
+});
 
 app.use('/api/user', userRouter);
 app.use('/api/seller', adminRouter);
@@ -41,12 +44,6 @@ app.use('/api/cart', cartRouter);
 app.use('/api/address', addressRouter);
 app.use('/api/order', orderRouter);
 
-connectDB()
-  .then(() => {
-    app.listen(PORT, () =>
-      console.log(`Server running on http://localhost:${PORT}`)
-    );
-  })
-  .catch((err) => console.log(err));
-
-connectCloudinary();
+app.listen(PORT, () =>
+  console.log(`Server running on http://localhost:${PORT}`)
+);
